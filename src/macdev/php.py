@@ -10,6 +10,11 @@ from .config import BREW, NGINX_SERVERS_DIR, PHP_ETC_DIR
 from .utils import console, err_console
 
 
+def _reload():
+    from .nginx import reload_nginx  # local import avoids circular dependency
+    reload_nginx()
+
+
 # Modules present in a stock Homebrew PHP install across all versions.
 _DEFAULT_MODULES = {
     "bcmath", "bz2", "calendar", "Core", "ctype", "curl", "date", "dba",
@@ -160,7 +165,7 @@ def php_switch(version: str, domain: str | None, all_vhosts: bool):
 
     Detects the vhost whose root matches the current directory.\n
     Use --domain to target a specific vhost, or --all to update every vhost.\n
-    Run [bold]macdev nginx reload[/bold] afterwards to apply.
+    nginx is reloaded automatically after switching.
 
     Example:\n
       macdev php switch 8.4\n
@@ -203,7 +208,7 @@ def _switch_vhost(domain: str, socket: str):
         sys.exit(1)
 
     _update_conf(conf, socket)
-    console.print("[dim]Run [bold]macdev nginx reload[/bold] to apply.[/dim]")
+    _reload()
 
 
 def _switch_all_vhosts(socket: str):
@@ -218,7 +223,7 @@ def _switch_all_vhosts(socket: str):
             updated_any = True
 
     if updated_any:
-        console.print("[dim]Run [bold]macdev nginx reload[/bold] to apply.[/dim]")
+        _reload()
 
 
 def _domain_for_cwd() -> str | None:

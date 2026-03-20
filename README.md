@@ -66,7 +66,7 @@ macdev php switch 8.2 --domain myapp.test
 macdev php switch 8.4 --all
 ```
 
-`php switch` updates `fastcgi_pass` in the nginx vhost config(s). Run `macdev nginx reload` after switching to apply the change.
+`php switch` updates `fastcgi_pass` in the nginx vhost config(s) and reloads nginx automatically.
 
 ### SSL
 
