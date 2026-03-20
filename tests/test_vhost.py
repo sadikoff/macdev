@@ -70,8 +70,8 @@ class TestVhostList:
         runner = CliRunner()
         with mock.patch("macdev.cli.check_requirements"):
             with mock.patch("macdev.vhost.NGINX_SERVERS_DIR", tmp_path):
-                with mock.patch("macdev.php.get_installed_versions", return_value=["8.2", "8.4"]):
-                    with mock.patch("macdev.php.get_fpm_socket", side_effect=lambda v: {
+                with mock.patch("macdev.vhost.get_installed_versions", return_value=["8.2", "8.4"]):
+                    with mock.patch("macdev.vhost.get_fpm_socket", side_effect=lambda v: {
                         "8.2": "127.0.0.1:9082", "8.4": "127.0.0.1:9084"
                     }.get(v)):
                         result = runner.invoke(cli, ["vhost", "list"])
@@ -116,9 +116,9 @@ class TestVhostInfo:
         runner = CliRunner()
         with mock.patch("macdev.cli.check_requirements"):
             with mock.patch("macdev.vhost.NGINX_SERVERS_DIR", tmp_path):
-                with mock.patch("macdev.php.get_installed_versions", return_value=["8.2"]):
-                    with mock.patch("macdev.php.get_fpm_socket", return_value="127.0.0.1:9082"):
-                        with mock.patch("macdev.php.get_extra_modules", return_value=[]):
+                with mock.patch("macdev.vhost.get_installed_versions", return_value=["8.2"]):
+                    with mock.patch("macdev.vhost.get_fpm_socket", return_value="127.0.0.1:9082"):
+                        with mock.patch("macdev.vhost.get_extra_modules", return_value=[]):
                             result = runner.invoke(cli, ["vhost", "info", "myapp.test"])
 
         assert result.exit_code == 0
