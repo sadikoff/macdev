@@ -152,17 +152,20 @@ def php_list():
 @php.command("switch")
 @click.argument("version")
 @click.option("--domain", default=None,
-              help="Update fastcgi_pass only in this vhost config (default: all vhosts).")
-def php_switch(version: str, domain: str | None):
-    """Switch vhosts to PHP VERSION (e.g. 8.2, 8.4).
+              help="Update fastcgi_pass for this vhost (default: vhost for current directory).")
+@click.option("--all", "all_vhosts", is_flag=True,
+              help="Update fastcgi_pass in all vhost configs.")
+def php_switch(version: str, domain: str | None, all_vhosts: bool):
+    """Switch the current directory's vhost to PHP VERSION (e.g. 8.2, 8.4).
 
-    Without --domain: updates fastcgi_pass in all vhost configs.\n
-    With --domain: only updates that vhost config.\n
+    Detects the vhost whose root matches the current directory.\n
+    Use --domain to target a specific vhost, or --all to update every vhost.\n
     Run [bold]macdev nginx reload[/bold] afterwards to apply.
 
     Example:\n
       macdev php switch 8.4\n
-      macdev php switch 8.2 --domain myapp.test
+      macdev php switch 8.2 --domain myapp.test\n
+      macdev php switch 8.4 --all
     """
     installed = get_installed_versions()
     if version not in installed:
@@ -177,10 +180,20 @@ def php_switch(version: str, domain: str | None):
         err_console.print(f"[red]Could not determine FPM socket for PHP {version}.[/red]")
         sys.exit(1)
 
-    if domain:
+    if all_vhosts:
+        _switch_all_vhosts(socket)
+    elif domain:
         _switch_vhost(domain, socket)
     else:
-        _switch_all_vhosts(socket, version)
+        detected = _domain_for_cwd()
+        if detected is None:
+            err_console.print(
+                "[red]No vhost found for the current directory.[/red] "
+                "Use [bold]--domain[/bold] to specify one, or [bold]--all[/bold] to update all vhosts."
+            )
+            sys.exit(1)
+        console.print(f"[dim]Detected vhost: {detected}[/dim]")
+        _switch_vhost(detected, socket)
 
 
 def _switch_vhost(domain: str, socket: str):
@@ -193,7 +206,7 @@ def _switch_vhost(domain: str, socket: str):
     console.print("[dim]Run [bold]macdev nginx reload[/bold] to apply.[/dim]")
 
 
-def _switch_all_vhosts(socket: str, version: str):
+def _switch_all_vhosts(socket: str):
     confs = sorted(NGINX_SERVERS_DIR.glob("*.conf"))
     if not confs:
         console.print("[dim]No vhosts found.[/dim]")
@@ -205,7 +218,20 @@ def _switch_all_vhosts(socket: str, version: str):
             updated_any = True
 
     if updated_any:
-        console.print(f"[dim]Run [bold]macdev nginx reload[/bold] to apply.[/dim]")
+        console.print("[dim]Run [bold]macdev nginx reload[/bold] to apply.[/dim]")
+
+
+def _domain_for_cwd() -> str | None:
+    """Return the domain of the vhost whose root matches the current directory."""
+    cwd = Path.cwd().resolve()
+    candidates = [cwd, cwd / "public"]
+    for conf in NGINX_SERVERS_DIR.glob("*.conf"):
+        text = conf.read_text()
+        m = re.search(r"root\s+([^;]+);", text)
+        if m and Path(m.group(1).strip()).resolve() in candidates:
+            m2 = re.search(r"server_name\s+([^;]+);", text)
+            return m2.group(1).strip() if m2 else None
+    return None
 
 
 def _update_conf(conf: Path, socket: str) -> bool:

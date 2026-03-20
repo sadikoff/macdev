@@ -56,14 +56,17 @@ macdev vhost remove myapp.test --yes   # skip confirmation
 # List installed PHP versions, their FPM sockets, and service status
 macdev php list
 
-# Switch all vhosts to PHP 8.4
+# Switch the vhost for the current directory to PHP 8.4
 macdev php switch 8.4
 
-# Switch a single vhost to PHP 8.2
+# Switch a specific vhost
 macdev php switch 8.2 --domain myapp.test
+
+# Switch all vhosts at once
+macdev php switch 8.4 --all
 ```
 
-`php switch` updates `fastcgi_pass` in the nginx vhost configs. Run `macdev nginx reload` after switching to apply the change.
+`php switch` updates `fastcgi_pass` in the nginx vhost config(s). Run `macdev nginx reload` after switching to apply the change.
 
 ### SSL
 
