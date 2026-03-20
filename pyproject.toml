@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "macdev"
+version = "0.1.0"
+description = "macOS local dev server management CLI (nginx + PHP via Homebrew)"
+requires-python = ">=3.9"
+dependencies = [
+    "click>=8.1",
+    "rich>=13.0",
+]
+
+[project.scripts]
+macdev = "macdev.cli:cli"
+
+[tool.setuptools.packages.find]
+where = ["src"]
