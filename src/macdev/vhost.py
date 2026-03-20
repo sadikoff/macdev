@@ -141,6 +141,10 @@ def vhost_create(domain: str, root: str | None, php_version: str | None, cert: s
         )
         sys.exit(1)
 
+    if bool(cert) != bool(key):
+        err_console.print("[red]--cert and --key must be provided together.[/red]")
+        sys.exit(1)
+
     if cert and key:
         cert_path = Path(cert).expanduser()
         key_path = Path(key).expanduser()
@@ -157,6 +161,7 @@ def vhost_create(domain: str, root: str | None, php_version: str | None, cert: s
         log_dir=NGINX_LOG_DIR,
     )
 
+    NGINX_SERVERS_DIR.mkdir(parents=True, exist_ok=True)
     conf.write_text(content)
     console.print(f"[green]Created:[/green] {collapse_home(conf)}")
     console.print(f"  domain : {domain}")

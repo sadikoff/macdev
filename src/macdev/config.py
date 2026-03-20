@@ -4,10 +4,15 @@ from pathlib import Path
 
 
 def _brew_prefix() -> Path:
-    result = subprocess.run(
-        ["brew", "--prefix"], capture_output=True, text=True, check=True
-    )
-    return Path(result.stdout.strip())
+    try:
+        result = subprocess.run(
+            ["brew", "--prefix"], capture_output=True, text=True, check=True
+        )
+        return Path(result.stdout.strip())
+    except (FileNotFoundError, subprocess.CalledProcessError):
+        # Homebrew not found — return a placeholder so imports succeed.
+        # check_requirements() will catch this and exit with a clear message.
+        return Path("/usr/local")
 
 
 BREW = _brew_prefix()

@@ -43,8 +43,8 @@ def get_installed_versions() -> list[str]:
             v = _version_from_binary(BREW / "bin/php")
             if v:
                 versions.append(v)
-        elif re.match(r"^php@(\d+\.\d+)$", line):
-            versions.append(re.match(r"^php@(\d+\.\d+)$", line).group(1))
+        elif m := re.match(r"^php@(\d+\.\d+)$", line):
+            versions.append(m.group(1))
     return sorted(set(versions))
 
 
@@ -64,7 +64,6 @@ def get_fpm_socket(version: str) -> str | None:
 
     Returns e.g. '127.0.0.1:9082' or '/run/php/php8.2-fpm.sock', or None.
     """
-    svc = get_service_name(version)
     # Versioned installs live under PHP_ETC_DIR/<version>/,
     # the head formula lives under PHP_ETC_DIR/ directly.
     candidates = [

@@ -13,7 +13,7 @@ from .vhost import vhost
 @click.pass_context
 def cli(ctx: click.Context):
     """macdev — manage nginx vhosts, PHP versions and SSL certs on macOS (Homebrew)."""
-    if ctx.invoked_subcommand != "version":
+    if ctx.invoked_subcommand is not None:
         check_requirements()
 
 
