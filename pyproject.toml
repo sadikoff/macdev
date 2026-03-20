@@ -15,5 +15,17 @@ dependencies = [
 [project.scripts]
 macdev = "macdev.cli:cli"
 
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+    "pytest-cov",
+]
+
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.coverage.run]
+source = ["macdev"]
